@@ -1,6 +1,8 @@
 # Define the database connection to be used for this model.
 connection: "trial-pbh"
 
+label: "Editais Publicos"
+
 # include all the views
 include: "/views/**/*.view.lkml"
 
@@ -25,5 +27,18 @@ persist_with: pbh_edital_atendimento_default_datagroup
 # Typically, join parameters require that you define the join type, join relationship, and a sql_on clause.
 # Each joined view also needs to define a primary key.
 
-explore: tmp_atend_edit_pub {}
+explore: tmp_edtital_aprovado {
+  label: "RAW - Atendimentos Editais Públicos "
+}
 
+
+explore: projeto {
+  label: "Projetos Apresentados"
+
+  join: projeto_perfil_publico {
+    view_label: "Perfils Publicos"
+    sql: LEFT JOIN UNNEST(projeto.perfil_publico) as projeto_perfil_publico ;;
+    relationship: one_to_many
+  }
+
+}
