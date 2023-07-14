@@ -29,6 +29,10 @@ Número de aprovados através dos editais executados pela Secretaria Municipal d
 | VALOR_PROJETO | Número | Valor total do projeto (captação não exclusiva do edital). |
 | VALOR_APROVADO | Número | Valor contemplado pelo edital para o projeto. |
 
+
+
+
+
 <h2><span style="color:#2d7eea">Overview LookML </span></h2>
 
 LookML é uma linguagem de modelagem de dados para descrever dimensões, campos, agregados e relacionamentos baseados em SQL.

@@ -3,7 +3,7 @@ view: projeto_perfil_publico {
   dimension: id {
     primary_key: yes
     hidden: yes
-    sql: CONCAT(CAST(${projeto.inscricao} AS STRING),'|', CAST(${perfil_publico} AS STRING)) ;;
+    sql: CONCAT(CAST(${projeto.nu_projeto} AS STRING),'|', CAST(${perfil_publico} AS STRING)) ;;
   }
 
   dimension: perfil_publico {

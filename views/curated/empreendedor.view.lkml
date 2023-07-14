@@ -1,5 +1,8 @@
 view: empreendedor {
   derived_table: {
+    datagroup_trigger: pbh_data
+    publish_as_db_view: yes
+
     sql:
     with inscrito as (
       select inscricao, tp_empreendedor, empreendedor from trial-pbh.raw.tmp_lmic_inscricao
