@@ -1,7 +1,7 @@
 # Define the database connection to be used for this model.
 connection: "trial-pbh"
 
-label: "Editais Publicos"
+label: "Analise dados RAW"
 
 # include all the views
 include: "/views/raw/*.view.lkml"
@@ -12,7 +12,7 @@ include: "/views/curated/*.view.lkml"
 
 datagroup: pbh_data {
   sql_trigger: SELECT count(1) FROM trial-pbh.raw.tmp_edtital_aprovado;;
-  max_cache_age: "1 hour"
+  max_cache_age: "12 hours"
 }
 persist_with: pbh_data
 
@@ -27,29 +27,41 @@ persist_with: pbh_data
 # Typically, join parameters require that you define the join type, join relationship, and a sql_on clause.
 # Each joined view also needs to define a primary key.
 
-# RAW Explore
-explore: tmp_edtital_aprovado {
-  label: "RAW - Atendimentos Editais Públicos "
-}
-explore: tmp_lmic_inscricao {
-  label: "RAW - LMIC Inscricao "
-}
-explore: tmp_lmic_aprovados {
-  label: "RAW - LMIC Aprovados "
-}
-explore: tmp_bhtelas_inscricao {
-  label: "RAW - BH nas Telas Inscricao "
-}
-explore: tmp_bhnastelas_aprovados {
-  label: "RAW - BH nas Telas Aprovados "
-}
 
 explore: projeto {
   label: "Projetos Apresentados"
 
   join: projeto_perfil_publico {
     view_label: "Perfils Publicos"
-    sql: LEFT JOIN UNNEST(projeto.perfil_publico) as projeto_perfil_publico ;;
+    sql: LEFT JOIN UNNEST(projeto.perfil_publico) as projeto_perfil_publico WITH OFFSET as projeto_perfil_publico_offset;;
+    relationship: one_to_many
+  }
+
+}
+
+explore: empreendedor {
+  join: contrato {
+    sql_on: ${empreendedor.nome}=${contrato.nome_emp} ;;
+    relationship: one_to_many
+  }
+}
+
+explore: inscricao_edital {
+  join: empreendedor {
+    sql_on: ${inscricao_edital.fk_empeendedor}=${empreendedor.pk} ;;
+    relationship: many_to_one
+  }
+  join: projeto {
+    sql_on:  ${inscricao_edital.fk_projeto}=${projeto.pk} ;;
+    relationship: one_to_one
+  }
+  join: projeto_perfil_publico {
+    view_label: "Perfils Publicos"
+    sql: LEFT JOIN UNNEST(projeto.perfil_publico) as projeto_perfil_publico WITH OFFSET as projeto_perfil_publico_offset;;
+    relationship: one_to_many
+  }
+  join: contrato {
+    sql_on: ${empreendedor.nome}=${contrato.nome_emp} ;;
     relationship: one_to_many
   }
 
