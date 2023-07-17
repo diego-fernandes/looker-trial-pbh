@@ -1,7 +1,7 @@
 # Define the database connection to be used for this model.
 connection: "trial-pbh"
 
-label: "Analise dados RAW"
+label: "Edital Atendimento SMC"
 
 # include all the views
 include: "/views/raw/*.view.lkml"
@@ -27,9 +27,10 @@ persist_with: pbh_data
 # Typically, join parameters require that you define the join type, join relationship, and a sql_on clause.
 # Each joined view also needs to define a primary key.
 
+explore: contrato {}
 
 explore: projeto {
-  label: "Projetos Apresentados"
+  label: "Projetos"
 
   join: projeto_perfil_publico {
     view_label: "Perfils Publicos"
@@ -40,16 +41,18 @@ explore: projeto {
 }
 
 explore: empreendedor {
+  label: "Empreendedor"
   join: contrato {
-    sql_on: ${empreendedor.nome}=${contrato.nome_emp} ;;
+    sql_on: ${empreendedor.pk}=${contrato.empreendedor_fk} ;;
     relationship: one_to_many
   }
 }
 
 explore: inscricao_edital {
+  label: "Inscricao Edital"
   join: empreendedor {
     sql_on: ${inscricao_edital.fk_empeendedor}=${empreendedor.pk} ;;
-    relationship: many_to_one
+    relationship: one_to_one
   }
   join: projeto {
     sql_on:  ${inscricao_edital.fk_projeto}=${projeto.pk} ;;
@@ -61,7 +64,7 @@ explore: inscricao_edital {
     relationship: one_to_many
   }
   join: contrato {
-    sql_on: ${empreendedor.nome}=${contrato.nome_emp} ;;
+    sql_on: ${empreendedor.pk}=${contrato.empreendedor_fk} ;;
     relationship: one_to_many
   }
 

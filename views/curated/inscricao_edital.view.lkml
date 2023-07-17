@@ -5,29 +5,36 @@ view: inscricao_edital {
 
     sql:
       with nota as (
-        select inscricao, no_projeto, nota from trial-pbh.raw.tmp_lmic_aprovados a join trial-pbh.raw.tmp_lmic_inscricao i on a.no_projeto=i.nu_projeto
+        select i.nu_inscricao, i.nu_projeto, nota, i.no_empreendedor, i.setor_analise as setor,null as no_categoria from trial-pbh.raw.tmp_lmic_aprovado a join trial-pbh.raw.tmp_lmic_inscrito i on a.nu_projeto=i.nu_projeto
         union all
-        select inscricao, a.no_projeto, nota from trial-pbh.raw.tmp_bhnastelas_aprovados a join trial-pbh.raw.tmp_bhtelas_inscricao i on a.no_projeto=i.nu_projeto
+        select i.nu_inscricao, i.nu_projeto, nota, i.no_empreendedor, "AUDIOVISUAL",i.no_categoria from trial-pbh.raw.tmp_bhtelas_aprovado a join trial-pbh.raw.tmp_bhtelas_inscrito i on a.nu_projeto=i.nu_projeto
       )
         SELECT
-          FARM_FINGERPRINT(inscricao) as pk
-          ,FARM_FINGERPRINT(empreendedor) as fk_empeendedor
-          ,FARM_FINGERPRINT(no_projeto) as fk_projeto
+          FARM_FINGERPRINT(e.inscricao) as pk
+          ,FARM_FINGERPRINT(upper(regexp_replace(REGEXP_REPLACE(NORMALIZE(no_empreendedor, NFD), r"\pM", ''),r'[^\w\- ]|  +',''))) as fk_empeendedor
+          ,FARM_FINGERPRINT(nu_projeto) as fk_projeto
           ,EDITAL  AS edital
           ,e.inscricao
-          ,nota
+          ,cast(split(nu_projeto,'/')[0] as int64) as nu_projeto
+          ,cast(split(nu_projeto,'/')[1] as int64) as ano_projeto
+          ,SAFE_CAST(REPLACE(nota,",",".") AS FLOAT64) AS nota
           ,case
-            when CONTAINS_SUBSTR(p.setor,'(') then trim(split(p.setor,'(')[0])
-            else p.setor
-          end as setor_inscricao
+            when CONTAINS_SUBSTR(n.setor,'(') then trim(split(n.setor,'(')[0])
+            else n.setor
+          end as setor_analise
           ,case
-            when CONTAINS_SUBSTR(p.setor,'(') then trim(split(p.setor,'(')[0])
+            when CONTAINS_SUBSTR(n.setor,'(') then trim(split(n.setor,'(')[0])
+            when n.setor="AUDIOVISUAL" and no_categoria="1" then "PRODUÇÃO"
+            when n.setor="AUDIOVISUAL" and no_categoria="2" then "FESTIVAIS"
+            when n.setor="AUDIOVISUAL" and no_categoria="3" then "JOGOS ELETRÔNICOS"
+            when n.setor="AUDIOVISUAL" and no_categoria="4" then "AUDIOVISUAL COMUNITÁRIO"
+            when n.setor="AUDIOVISUAL" and no_categoria="5" then "PESQUISA E FORMATO LIVRE"
             else null
-          end as subsetor_inscricao
-          ,SAFE_CAST(REPLACE(VALOR_SOLICITADO,",",".") AS FLOAT64) AS VALOR_SOLICITADO
-          ,SAFE_CAST(REPLACE(VALOR_APROVADO,",",".") AS FLOAT64) AS VALOR_APROVADO
+          end as subsetor_analise
+          ,SAFE_CAST(REPLACE(VALOR_SOLICITADO,",",".") AS FLOAT64) AS valor_solicitado
+          ,SAFE_CAST(REPLACE(VALOR_APROVADO,",",".") AS FLOAT64) AS valor_aprovado
         FROM trial-pbh.raw.tmp_edtital_aprovado e
-        join nota n on e.inscricao=n.inscricao
+        left join nota n on e.inscricao=n.nu_inscricao
     ;;
   }
 
@@ -56,16 +63,9 @@ view: inscricao_edital {
         when ${edital}="EDITAL LMIC 2020 – FUNDO MUNICIPAL DE CULTURA" then "LMIC"
       end
     ;;
-    action: {
+    link: {
       label: "Publicações"
-      url: "https://prefeitura.pbh.gov.br/cultura/editais
-      {% if value=='BH Nas Telas' %}
-       /lmic-2020-bhnastelas
-      {% elsif value=='LMIC' %}
-        /lmic-2020-fundo
-      {% else %}
-         /
-      {% endif %} "
+      url: "https://prefeitura.pbh.gov.br/cultura/editais{% if value=='BH Nas Telas' %}/lmic-2020-bhnastelas{% elsif value=='LMIC' %}/lmic-2020-fundo{% else %}/{% endif %} "
     }
 
   }
@@ -77,16 +77,19 @@ view: inscricao_edital {
     label: "Numero"
     description: "Numero do projeto"
     type: number
+    value_format: "0"
   }
   dimension: ano_projeto {
     label: "Ano"
     description: "Ano do projeto"
     type: number
+    value_format: "0"
   }
   dimension: nota {
     label: "Nota Final"
     description: "Nota final do projeto no Edital"
     type: number
+    value_format: "0.0"
   }
 
   dimension: valor_solicitado {
@@ -97,13 +100,15 @@ view: inscricao_edital {
     description: "Valor solicitado por projeto no Edital"
     type: sum
     sql: ${valor_solicitado} ;;
+    value_format: "\R$#,##0.00"
   }
 
   measure: avg_valor_solicitado {
     label: "Média Valor Solicitado"
     description: "Média do valor solicitado por projeto no Edital"
-    type: average
+    type: sum
     sql: ${valor_solicitado} ;;
+    value_format: "\R$#,##0.00"
   }
 
   dimension: valor_aprovado  {
@@ -115,13 +120,15 @@ view: inscricao_edital {
     description: "Valor aprovado por projeto no Edital"
     type: sum
     sql: ${valor_aprovado} ;;
+    value_format: "\R$#,##0.00"
   }
 
   measure: avg_valor_aprovado {
     label: "Média Valor Solicitado"
     description: "Média do valor solicitado por projeto no Edital"
-    type: average
+    type: sum
     sql: ${valor_aprovado} ;;
+    value_format: "\R$#,##0.00"
   }
 
 }

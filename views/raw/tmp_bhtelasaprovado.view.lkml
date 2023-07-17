@@ -1,20 +1,24 @@
-# The name of this view in Looker is "Tmp Lmic Aprovados"
-view: tmp_lmic_aprovados {
-  label: "Raw LMIC Aprovados"
+# The name of this view in Looker is "Tmp Bhtelasaprovado"
+view: tmp_bhtelasaprovado {
   # The sql_table_name parameter indicates the underlying database table
   # to be used for all fields in this view.
-  sql_table_name: `trial-pbh.raw.tmp_lmic_aprovados` ;;
+  sql_table_name: `trial-pbh.raw.tmp_bhtelas-aprovado` ;;
 
   # No primary key is defined for this view. In order to join this view in an Explore,
   # define primary_key: yes on a dimension that has no repeated values.
 
     # Here's what a typical dimension looks like in LookML.
     # A dimension is a groupable field that can be used to filter query results.
-    # This dimension will be called "Empeendedor" in Explore.
+    # This dimension will be called "No Categoria" in Explore.
 
-  dimension: empeendedor {
+  dimension: no_categoria {
     type: string
-    sql: ${TABLE}.empeendedor ;;
+    sql: ${TABLE}.no_categoria ;;
+  }
+
+  dimension: no_empreendedor {
+    type: string
+    sql: ${TABLE}.no_empreendedor ;;
   }
 
   dimension: no_projeto {
@@ -27,19 +31,14 @@ view: tmp_lmic_aprovados {
     sql: ${TABLE}.nota ;;
   }
 
-  dimension: projeto {
+  dimension: nu_projeto {
     type: string
-    sql: ${TABLE}.projeto ;;
+    sql: ${TABLE}.nu_projeto ;;
   }
 
-  dimension: setor {
+  dimension: vl_aprovado {
     type: string
-    sql: ${TABLE}.setor ;;
-  }
-
-  dimension: valor_aprovado {
-    type: string
-    sql: ${TABLE}.valor_aprovado ;;
+    sql: ${TABLE}.vl_aprovado ;;
   }
   measure: count {
     type: count

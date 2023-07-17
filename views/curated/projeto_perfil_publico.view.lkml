@@ -1,9 +1,9 @@
 view: projeto_perfil_publico {
 
-  dimension: id {
+  dimension: pk {
     primary_key: yes
     hidden: yes
-    sql: CONCAT(CAST(${projeto.nu_projeto} AS STRING),'|', CAST(${perfil_publico_offset} AS STRING)) ;;
+    sql: CONCAT(CAST(${projeto.pk} AS STRING),'|', CAST(${perfil_publico_offset} AS STRING)) ;;
   }
 
   dimension: perfil_publico_offset {
@@ -22,9 +22,10 @@ view: projeto_perfil_publico {
 
   measure: estivativa_publico_perfil {
     description: "Estimativa da quantidade de pessoas do público alvo que o projeto buscou atender por perfil publico."
-    label: "Estimativa de pessoas aendidas por perfil"
+    label: "Est. de pessoas por perfil"
     type: sum
     sql: ROUND(${projeto.estimativa_publico}/${projeto.qtd_perfis}) ;;
+    value_format: "0"
   }
 
 }
