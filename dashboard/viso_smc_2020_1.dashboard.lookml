@@ -1,4 +1,4 @@
-- dashboard: viso_smc_2020
+- dashboard: viso_smc_2020_1
   title: Visão SMC 2020
   layout: newspaper
   preferred_viewer: dashboards-next
