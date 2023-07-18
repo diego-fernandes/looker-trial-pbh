@@ -11,7 +11,7 @@
     model: pbh_edital_atendimento
     explore: inscricao_edital_aprovado
     type: marketplace_viz_multiple_value::multiple_value-marketplace
-    fields: [inscricao_edital_aprovado.sum_valor_aprovado, inscricao_edital_aprovado.sum_valor_solicitado]
+    fields: [inscricao_edital.sum_valor_aprovado, inscricao_edital.sum_valor_solicitado]
     limit: 500
     column_limit: 50
     hidden_fields: []
@@ -19,15 +19,15 @@
     show_view_names: false
     font_size_main: '22'
     orientation: auto
-    style_inscricao_edital_aprovado.sum_valor_aprovado: "#7CB342"
-    show_title_inscricao_edital_aprovado.sum_valor_aprovado: true
-    title_placement_inscricao_edital_aprovado.sum_valor_aprovado: above
-    value_format_inscricao_edital_aprovado.sum_valor_aprovado: ''
-    show_comparison_inscricao_edital_aprovado.sum_valor_solicitado: true
-    comparison_style_inscricao_edital_aprovado.sum_valor_solicitado: calculate_progress_perc
-    comparison_show_label_inscricao_edital_aprovado.sum_valor_solicitado: true
-    comparison_label_placement_inscricao_edital_aprovado.sum_valor_solicitado: below
-    comp_value_format_inscricao_edital_aprovado.sum_valor_solicitado: ''
+    style_inscricao_edital.sum_valor_aprovado: "#7CB342"
+    show_title_inscricao_edital.sum_valor_aprovado: true
+    title_placement_inscricao_edital.sum_valor_aprovado: above
+    value_format_inscricao_edital.sum_valor_aprovado: ''
+    show_comparison_inscricao_edital.sum_valor_solicitado: true
+    comparison_style_inscricao_edital.sum_valor_solicitado: calculate_progress_perc
+    comparison_show_label_inscricao_edital.sum_valor_solicitado: true
+    comparison_label_placement_inscricao_edital.sum_valor_solicitado: below
+    comp_value_format_inscricao_edital.sum_valor_solicitado: ''
     custom_color_enabled: true
     show_single_value_title: true
     show_comparison: true
@@ -119,9 +119,9 @@
     model: pbh_edital_atendimento
     explore: inscricao_edital_aprovado
     type: looker_scatter
-    fields: [projeto.setor, inscricao_edital_aprovado.sum_valor_aprovado, projeto.sum_estimativa_publico,
-      inscricao_edital_aprovado.count]
-    sorts: [inscricao_edital_aprovado.sum_valor_aprovado desc 0]
+    fields: [projeto.setor, inscricao_edital.sum_valor_aprovado, projeto.sum_estimativa_publico,
+      inscricao_edital.count]
+    sorts: [inscricao_edital.sum_valor_aprovado desc 0]
     limit: 500
     column_limit: 50
     dynamic_fields:
@@ -166,7 +166,7 @@
         showValues: true, valueFormat: '0, " K"', unpinAxis: false, tickDensity: default,
         tickDensityCustom: 5, type: linear}]
     x_axis_label: Valor
-    size_by_field: inscricao_edital_aprovado.count
+    size_by_field: inscricao_edital.count
     x_axis_zoom: true
     y_axis_zoom: true
     limit_displayed_rows_values:
@@ -196,7 +196,7 @@
         label: Valor⇩ Publico⇧
     custom_quadrant_point_x: 5
     custom_quadrant_point_y: 5
-    custom_x_column: inscricao_edital_aprovado.sum_valor_aprovado
+    custom_x_column: inscricao_edital.sum_valor_aprovado
     custom_y_column: projeto.sum_estimativa_publico
     custom_value_label_column: ''
     show_row_numbers: true
@@ -273,20 +273,20 @@
     model: pbh_edital_atendimento
     explore: inscricao_edital_aprovado
     type: marketplace_viz_spider::spider-marketplace
-    fields: [inscricao_edital_aprovado.edital_short, inscricao_edital_aprovado.sum_valor_aprovado, projeto.sum_estimativa_publico,
+    fields: [inscricao_edital.edital_short, inscricao_edital.sum_valor_aprovado, projeto.sum_estimativa_publico,
       projeto.sum_profissionais]
-    sorts: [inscricao_edital_aprovado.sum_valor_aprovado desc 0]
+    sorts: [inscricao_edital.sum_valor_aprovado desc 0]
     limit: 500
     column_limit: 50
     dynamic_fields:
     - args:
-      - inscricao_edital_aprovado.sum_valor_aprovado
+      - inscricao_edital.sum_valor_aprovado
       calculation_type: percent_of_column_sum
       category: table_calculation
-      based_on: inscricao_edital_aprovado.sum_valor_aprovado
+      based_on: inscricao_edital.sum_valor_aprovado
       label: Percent of Inscricao Edital Valor Aprovado
-      source_field: inscricao_edital_aprovado.sum_valor_aprovado
-      table_calculation: percent_of_inscricao_edital_aprovado_valor_aprovado
+      source_field: inscricao_edital.sum_valor_aprovado
+      table_calculation: percent_of_inscricao_edital_valor_aprovado
       value_format:
       value_format_name: percent_0
       _kind_hint: measure
@@ -315,7 +315,7 @@
       value_format_name: percent_0
       _kind_hint: measure
       _type_hint: number
-    hidden_fields: [inscricao_edital_aprovado.sum_valor_aprovado, projeto.sum_estimativa_publico,
+    hidden_fields: [inscricao_edital.sum_valor_aprovado, projeto.sum_estimativa_publico,
       projeto.sum_profissionais]
     hidden_points_if_no: []
     show_view_names: false

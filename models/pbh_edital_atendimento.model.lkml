@@ -6,6 +6,7 @@ label: "Edital Atendimento SMC"
 # include all the views
 include: "/views/raw/*.view.lkml"
 include: "/views/curated/*.view.lkml"
+include: "/dashboard/*.dashboard.lookml"
 
 # Datagroups define a caching policy for an Explore. To learn more,
 # use the Quick Help panel on the right to see documentation.
