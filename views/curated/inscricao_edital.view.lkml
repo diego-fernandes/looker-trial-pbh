@@ -4,43 +4,51 @@ view: inscricao_edital {
     publish_as_db_view: yes
 
     sql:
-      with nota as (
-        select i.nu_inscricao, i.nu_projeto, nota, i.no_empreendedor, i.setor_analise as setor,null as no_categoria from trial-pbh.raw.tmp_lmic_aprovado a join trial-pbh.raw.tmp_lmic_inscrito i on a.nu_projeto=i.nu_projeto
+      with inscricao as (
+        select trim(i.nu_inscricao) as nu_inscricao, trim(i.nu_projeto) as nu_projeto, nota, i.no_empreendedor, i.setor_analise as setor,null as no_categoria, "EDITAL LMIC 2020 – FUNDO MUNICIPAL DE CULTURA" as edital from trial-pbh.raw.tmp_lmic_inscrito i left join trial-pbh.raw.tmp_lmic_aprovado a  on a.nu_projeto=i.nu_projeto
         union all
-        select i.nu_inscricao, i.nu_projeto, nota, i.no_empreendedor, "AUDIOVISUAL",i.no_categoria from trial-pbh.raw.tmp_bhtelas_aprovado a join trial-pbh.raw.tmp_bhtelas_inscrito i on a.nu_projeto=i.nu_projeto
+        select trim(i.nu_inscricao), trim(i.nu_projeto), nota, i.no_empreendedor, "AUDIOVISUAL",i.no_categoria,  "EDITAL BH NAS TELAS 2020 - FUNDO" from trial-pbh.raw.tmp_bhtelas_inscrito i left join trial-pbh.raw.tmp_bhtelas_aprovado a  on a.nu_projeto=i.nu_projeto
       )
         SELECT
-          FARM_FINGERPRINT(e.inscricao) as pk
-          ,FARM_FINGERPRINT(upper(regexp_replace(REGEXP_REPLACE(NORMALIZE(no_empreendedor, NFD), r"\pM", ''),r'[^\w\- ]|  +',''))) as fk_empeendedor
-          ,FARM_FINGERPRINT(nu_projeto) as fk_projeto
-          ,EDITAL  AS edital
-          ,e.inscricao
-          ,cast(split(nu_projeto,'/')[0] as int64) as nu_projeto
-          ,cast(split(nu_projeto,'/')[1] as int64) as ano_projeto
-          ,SAFE_CAST(REPLACE(nota,",",".") AS FLOAT64) AS nota
+          FARM_FINGERPRINT(trim(i.nu_inscricao)) as pk
+          ,FARM_FINGERPRINT(upper(regexp_replace(REGEXP_REPLACE(NORMALIZE(i.no_empreendedor, NFD), r"\pM", ''),r'[^\w\- ]|  +',''))) as fk_empeendedor
+          ,FARM_FINGERPRINT(i.nu_projeto) as fk_projeto
+          ,i.edital  AS edital
+          ,i.nu_inscricao
+          ,cast(split(i.nu_projeto,'/')[0] as int64) as nu_projeto
+          ,cast(split(i.nu_projeto,'/')[1] as int64) as ano_projeto
           ,case
-            when CONTAINS_SUBSTR(n.setor,'(') then trim(split(n.setor,'(')[0])
-            else n.setor
+            when CONTAINS_SUBSTR(i.setor,'(') then trim(split(i.setor,'(')[0])
+            else i.setor
           end as setor_analise
           ,case
-            when CONTAINS_SUBSTR(n.setor,'(') then trim(split(n.setor,'(')[0])
-            when n.setor="AUDIOVISUAL" and no_categoria="1" then "PRODUÇÃO"
-            when n.setor="AUDIOVISUAL" and no_categoria="2" then "FESTIVAIS"
-            when n.setor="AUDIOVISUAL" and no_categoria="3" then "JOGOS ELETRÔNICOS"
-            when n.setor="AUDIOVISUAL" and no_categoria="4" then "AUDIOVISUAL COMUNITÁRIO"
-            when n.setor="AUDIOVISUAL" and no_categoria="5" then "PESQUISA E FORMATO LIVRE"
+            when CONTAINS_SUBSTR(i.setor,'(') then trim(split(i.setor,'(')[0])
+            when i.setor="AUDIOVISUAL" and no_categoria="1" then "PRODUÇÃO"
+            when i.setor="AUDIOVISUAL" and no_categoria="2" then "FESTIVAIS"
+            when i.setor="AUDIOVISUAL" and no_categoria="3" then "JOGOS ELETRÔNICOS"
+            when i.setor="AUDIOVISUAL" and no_categoria="4" then "AUDIOVISUAL COMUNITÁRIO"
+            when i.setor="AUDIOVISUAL" and no_categoria="5" then "PESQUISA E FORMATO LIVRE"
             else null
           end as subsetor_analise
+          ,SAFE_CAST(REPLACE(i.nota,",",".") AS FLOAT64) AS nota
+          ,IF(i.nota is null, false, true) as in_aprovado
           ,SAFE_CAST(REPLACE(VALOR_SOLICITADO,",",".") AS FLOAT64) AS valor_solicitado
           ,SAFE_CAST(REPLACE(VALOR_APROVADO,",",".") AS FLOAT64) AS valor_aprovado
-        FROM trial-pbh.raw.tmp_edtital_aprovado e
-        left join nota n on e.inscricao=n.nu_inscricao
+        FROM inscricao i
+        left join trial-pbh.raw.tmp_edtital_aprovado e
+          on trim(e.inscricao)=i.nu_inscricao
     ;;
   }
 
   dimension: pk {
     primary_key: yes
     hidden: yes
+  }
+  drill_fields: [pk]
+
+  dimension: in_aprovado {
+    label: "in Projeto Aprovado?"
+    type: yesno
   }
 
   dimension: fk_empeendedor {
@@ -106,7 +114,7 @@ view: inscricao_edital {
   measure: avg_valor_solicitado {
     label: "Média Valor Solicitado"
     description: "Média do valor solicitado por projeto no Edital"
-    type: sum
+    type: average_distinct
     sql: ${valor_solicitado} ;;
     value_format: "\R$#,##0.00"
   }
@@ -124,11 +132,16 @@ view: inscricao_edital {
   }
 
   measure: avg_valor_aprovado {
-    label: "Média Valor Solicitado"
+    label: "Média Valor Aprovado"
     description: "Média do valor solicitado por projeto no Edital"
-    type: sum
+    type: average
     sql: ${valor_aprovado} ;;
     value_format: "\R$#,##0.00"
+  }
+
+  measure: count {
+    label: "Quantidade"
+    type: count
   }
 
 }

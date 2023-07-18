@@ -32,6 +32,7 @@ view: contrato {
     primary_key: yes
     hidden: yes
   }
+  drill_fields: [pk]
 
   dimension: empreendedor_fk {
     hidden: yes

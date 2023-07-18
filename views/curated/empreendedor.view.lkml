@@ -5,9 +5,9 @@ view: empreendedor {
 
     sql:
       with inscrito as (
-        select i.nu_inscricao, i.tp_empreendedor, i.no_empreendedor from trial-pbh.raw.tmp_lmic_aprovado a join trial-pbh.raw.tmp_lmic_inscrito i on a.nu_projeto=i.nu_projeto
+        select i.nu_inscricao, i.tp_empreendedor, i.no_empreendedor from trial-pbh.raw.tmp_lmic_inscrito i
         union all
-        select i.nu_inscricao, i.tp_empreendedor, i.no_empreendedor from trial-pbh.raw.tmp_bhtelas_aprovado a join trial-pbh.raw.tmp_bhtelas_inscrito i on a.nu_projeto=i.nu_projeto
+        select i.nu_inscricao, i.tp_empreendedor, i.no_empreendedor from trial-pbh.raw.tmp_bhtelas_inscrito i
       )
       select
       FARM_FINGERPRINT(nome_norm) as pk

@@ -5,35 +5,36 @@ view: projeto {
     publish_as_db_view: yes
 
     sql:
-      with projeto as (
-        select nu_inscricao, nu_projeto, no_projeto, setor, setor_analise, null as no_categoria from trial-pbh.raw.tmp_lmic_inscrito
+      with inscricao as (
+        select trim(nu_inscricao) as nu_inscricao, trim(nu_projeto) as nu_projeto, no_projeto, setor, setor_analise, null as no_categoria from trial-pbh.raw.tmp_lmic_inscrito
         union all
-        select nu_inscricao, nu_projeto, no_projeto, "AUDIOVISUAL", null , no_categoria from trial-pbh.raw.tmp_bhtelas_inscrito
+        select trim(nu_inscricao), trim(nu_projeto), no_projeto, "AUDIOVISUAL", null , no_categoria from trial-pbh.raw.tmp_bhtelas_inscrito
       )
         SELECT
           FARM_FINGERPRINT(nu_projeto) as pk
           ,regexp_replace(no_projeto,r'[^\p{Latin}]|\n|  +','') as nome_projeto
+          ,case
+            when CONTAINS_SUBSTR(i.setor,'(') then trim(split(i.setor,'(')[0])
+            else i.setor
+          end as setor
+          ,case
+            when CONTAINS_SUBSTR(i.setor,'(') then trim(split(i.setor,'(')[1],')')
+            when i.setor="AUDIOVISUAL" and no_categoria="1" then "PRODUÇÃO"
+            when i.setor="AUDIOVISUAL" and no_categoria="2" then "FESTIVAIS"
+            when i.setor="AUDIOVISUAL" and no_categoria="3" then "JOGOS ELETRÔNICOS"
+            when i.setor="AUDIOVISUAL" and no_categoria="4" then "AUDIOVISUAL COMUNITÁRIO"
+            when i.setor="AUDIOVISUAL" and no_categoria="5" then "PESQUISA E FORMATO LIVRE"
+            else null
+          end as subsetor
           ,ESTIMATIVA_PUBLICO as estimativa_publico
           ,REGEXP_EXTRACT_ALL(PERFIL_PUBLICO,r'\w[^,]*\w')  AS perfil_publico
           ,ARRAY_LENGTH(REGEXP_EXTRACT_ALL(PERFIL_PUBLICO,r'\w[^,]*\w')) qtd_perfis
           ,PROFISSIONAIS  AS profissionais
           ,PROJETO_NOVO AS projeto_novo
-          ,case
-            when CONTAINS_SUBSTR(e.SETOR,'(') then trim(split(e.SETOR,'(')[0])
-            else e.SETOR
-          end as setor
-          ,case
-            when CONTAINS_SUBSTR(e.SETOR,'(') then trim(split(e.SETOR,'(')[1],')')
-            when e.setor="AUDIOVISUAL" and no_categoria="1" then "PRODUÇÃO"
-            when e.setor="AUDIOVISUAL" and no_categoria="2" then "FESTIVAIS"
-            when e.setor="AUDIOVISUAL" and no_categoria="3" then "JOGOS ELETRÔNICOS"
-            when e.setor="AUDIOVISUAL" and no_categoria="4" then "AUDIOVISUAL COMUNITÁRIO"
-            when e.setor="AUDIOVISUAL" and no_categoria="5" then "PESQUISA E FORMATO LIVRE"
-            else null
-          end as subsetor
           ,SAFE_CAST(REPLACE(VALOR_PROJETO,",",".") AS FLOAT64) AS valor_projeto
-        FROM trial-pbh.raw.tmp_edtital_aprovado e
-        join projeto p on e.INSCRICAO=p.inscricao
+        FROM inscricao i
+        left join trial-pbh.raw.tmp_edtital_aprovado e
+          on trim(e.INSCRICAO)=i.nu_inscricao
     ;;
   }
 
@@ -41,6 +42,7 @@ view: projeto {
     primary_key: yes
     hidden: yes
   }
+  drill_fields: [pk]
 
   dimension: nome_projeto {
     label: "Nome"
@@ -55,7 +57,7 @@ view: projeto {
     label: "Estimativa de Publico"
     description: "Estimativa da quantidade de pessoas do público alvo que o projeto buscou atender."
     sql: ${estimativa_publico} ;;
-    value_format: "0"
+    value_format: "#,##0"
   }
 
   dimension: profissionais {
@@ -67,7 +69,7 @@ view: projeto {
     description: "Número de contratações que são geradas com a execução do projeto."
     type: sum_distinct
     sql: ${profissionais} ;;
-    value_format: "0"
+    value_format: "#,##0"
   }
 
   dimension: projeto_novo {
@@ -106,5 +108,11 @@ view: projeto {
     type: sum_distinct
     value_format: "\R$#,##0.00"
   }
+
+  measure: count {
+    label: "Quantidade"
+    type: count
+  }
+
 
 }
